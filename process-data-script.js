@@ -64,7 +64,6 @@ function prepareStudentsTable(student, studentsData, categories, courseCategory,
       "reg_no": "Registration No",
       "name": "Name",
       "specialization": "Specialization",
-      "cgpa": "CGPA"
     };
     console.log(specializationData[student]);
     const titleRow = document.createElement("tr");
@@ -211,7 +210,6 @@ document.getElementById("getStudentsDataButton").addEventListener("click", async
       "reg_no": row["reg_no"],
       "name": row["name"],
       "specialization": row["specialization"],
-      "cgpa": row["cgpa"]
     };
   }
 
