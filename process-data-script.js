@@ -53,11 +53,45 @@ function displaySuggestedCourses(category, courseCategory, coursesData) {
   } 
 }
 
-function prepareStudentsTable(student, studentsData, categories, courseCategory, coursesData) {
+function prepareStudentsTable(student, studentsData, categories, courseCategory, coursesData, specializationData) {
   const tableContainer = document.getElementById("tableContainer");
   tableContainer.innerHTML = "";
   
   if (studentsData[student]) {
+    const infoTable = document.createElement("table");
+    infoTable.border = 1;
+    const h = {
+      "reg_no": "Registration No",
+      "name": "Name",
+      "specialization": "Specialization",
+      "cgpa": "CGPA"
+    };
+    console.log(specializationData[student]);
+    const titleRow = document.createElement("tr");
+
+    for (const title in h) {
+      const titleElement = document.createElement("td");
+      titleElement.style.textAlign = "center";
+      titleElement.style.fontWeight = "bold";
+      titleElement.textContent = h[title];
+      titleRow.appendChild(titleElement);
+    }
+
+    const valuesRow = document.createElement("tr");
+
+    for (const title in h) {
+      const valueElement = document.createElement("td");
+      valueElement.style.textAlign = "center";
+      valueElement.textContent = specializationData[student][title];
+      valuesRow.append(valueElement);
+    }
+
+    infoTable.appendChild(titleRow);
+    infoTable.appendChild(valuesRow);
+    infoTable.style.marginBottom = "1rem";
+
+    tableContainer.appendChild(infoTable);
+
     const studentData = studentsData[student];
     const table = document.createElement("table");
     table.border = 1;
@@ -156,11 +190,13 @@ document.getElementById("getStudentsDataButton").addEventListener("click", async
   const requirementsPath = "requirements3.csv";
   const studentsPath = "students4.csv";
   const creditsPath = "credits3.csv";
+  const specializationPath = "specialization.csv";
 
-  const [requirementsData, studentsData, creditsData] = await Promise.all([
+  const [requirementsData, studentsData, creditsData, specializationData] = await Promise.all([
     getDataFromCsv(requirementsPath),
     getDataFromCsv(studentsPath),
-    getDataFromCsv(creditsPath)
+    getDataFromCsv(creditsPath),
+    getDataFromCsv(specializationPath),
   ]);
 
   const courseCategory = {};
@@ -168,6 +204,16 @@ document.getElementById("getStudentsDataButton").addEventListener("click", async
   const categories = new Set();
   const students = {};
   const studentRegisteredCourses = {};
+
+  const studentInfo = {};
+  for (const row of specializationData) {
+    studentInfo[row["reg_no"]] = {
+      "reg_no": row["reg_no"],
+      "name": row["name"],
+      "specialization": row["specialization"],
+      "cgpa": row["cgpa"]
+    };
+  }
 
   const studentFailHistory = {};
 
@@ -288,5 +334,6 @@ document.getElementById("getStudentsDataButton").addEventListener("click", async
     studentsReport[student]["honorsEligible"] = additionalCredits >= 20 && !studentFailHistory[student];
     if (student === "2000030167") console.log(additionalCredits, studentFailHistory[student]);
   }
-  prepareStudentsTable(studentRegNo, studentsReport, categories, courseCategory, course);
+  console.log(specializationData);
+  prepareStudentsTable(studentRegNo, studentsReport, categories, courseCategory, course, studentInfo);
 });
