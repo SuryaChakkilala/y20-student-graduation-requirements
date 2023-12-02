@@ -204,7 +204,8 @@ async function getDataFromCsv(filePath) {
   });
 }
 
-document.getElementById("getStudentsDataButton").addEventListener("click", async function () {
+document.getElementById("studentform").addEventListener("submit", async function (event) {
+  event.preventDefault();
   const studentRegNo = document.getElementById("studentId").value.trim();
   if (studentRegNo.length === 0) {
     alert("Enter Student ID Number");
