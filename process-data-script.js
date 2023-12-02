@@ -13,7 +13,8 @@ function closeSuggestedCourses() {
 
 function printReport(student, studentsData, categories, courseCategory, coursesData, specializationData) {
   prepareStudentsTable(student, studentsData, categories, courseCategory, coursesData, specializationData);
-  return function () {
+  return function (event) {
+    event.preventDefault();
     print();
   };
 }
