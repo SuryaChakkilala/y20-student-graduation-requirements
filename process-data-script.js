@@ -65,7 +65,6 @@ function prepareStudentsTable(student, studentsData, categories, courseCategory,
       "name": "Name",
       "specialization": "Specialization",
     };
-    console.log(specializationData[student]);
     const titleRow = document.createElement("tr");
 
     for (const title in h) {
@@ -143,12 +142,32 @@ function prepareStudentsTable(student, studentsData, categories, courseCategory,
     //   table.appendChild(tr);
     // }
 
+    const honorsTable = document.createElement("table");
+    honorsTable.border = 1;
+    const additionalCreditsRow = document.createElement("tr");
+    additionalCreditsRow.style.textAlign = "center";
+    const additionalCreditsTitle = document.createElement("td");
+    additionalCreditsTitle.innerHTML = "<b>Additional Credits</b>";
+
+    const additionalCreditsValue = document.createElement("td");
+    additionalCreditsValue.textContent = studentData["additionalCredits"];
+
+    additionalCreditsRow.appendChild(additionalCreditsTitle);
+    additionalCreditsRow.appendChild(additionalCreditsValue);
+
     const honorsEligibilityRow = document.createElement("tr");
     const honorsEligibilityRowTitle = document.createElement("td");
-    honorsEligibilityRowTitle.textContent = "Honors Eligibility";
+    honorsEligibilityRowTitle.innerHTML = "<b>Honors Eligibility</b>";
     const honorsEligibilityStatus = document.createElement("td");
     honorsEligibilityStatus.innerHTML = studentData["honorsEligible"] ? "<b>YES</b>" : "<b>NO</b>";
-    honorsEligibilityStatus.colSpan = 5;
+
+    const commentsRow = document.createElement("tr");
+    const commentTitle = document.createElement("td");
+    commentTitle.innerHTML = "<b>Comments</b>";
+    const comment = document.createElement("td");
+    comment.textContent = studentData["comment"];
+    commentsRow.appendChild(commentTitle);
+    commentsRow.appendChild(comment);
 
     honorsEligibilityRow.appendChild(honorsEligibilityRowTitle);
     honorsEligibilityRow.appendChild(honorsEligibilityStatus);
@@ -156,8 +175,14 @@ function prepareStudentsTable(student, studentsData, categories, courseCategory,
     honorsEligibilityRowTitle.style.textAlign = "center";
     honorsEligibilityStatus.style.textAlign = "center";
 
-    table.appendChild(honorsEligibilityRow);
+    honorsTable.appendChild(honorsEligibilityRow);
+    honorsTable.appendChild(additionalCreditsRow);
+    honorsTable.appendChild(commentsRow);
+
+    honorsTable.style.marginTop = "1rem";
+
     tableContainer.appendChild(table);
+    tableContainer.appendChild(honorsTable);
   } else {
     alert("Enter a valid Student ID number");
   }
@@ -245,7 +270,12 @@ document.getElementById("getStudentsDataButton").addEventListener("click", async
       const result = [code, credits];
       students[regNo].push(result);
     }
-    studentFailHistory[regNo] = hasFailHistory(grade);
+    if (!(regNo in studentFailHistory)) {
+      studentFailHistory[regNo] = false;
+    }
+    if (hasFailHistory(grade)) {
+      studentFailHistory[regNo] = true;
+    }
     studentRegisteredCourses[regNo].add(code);
   }
 
@@ -329,8 +359,17 @@ document.getElementById("getStudentsDataButton").addEventListener("click", async
     row.push(additionalCredits);
     fullReport[student] = row;
     studentsReport[student] = studentData;
+    if (studentFailHistory[student]) {
+      studentsReport[student]["comment"] = "Cannot get Honors degree due to Fail (or) Detention history in one (or) more courses";
+    } else {
+      if (additionalCredits >= 20) {
+        studentsReport[student]["comment"] = "Can get Honors degree if no F (or) DT grade is obtained in the future results";
+      } else {
+        studentsReport[student]["comment"] = `Can get Honors degree if obtained more than 20 additional credits. Additional Credits Due - ${20 - additionalCredits}`;
+      }
+    }
+    studentsReport[student]["additionalCredits"] = additionalCredits;
     studentsReport[student]["honorsEligible"] = additionalCredits >= 20 && !studentFailHistory[student];
-    if (student === "2000030167") console.log(additionalCredits, studentFailHistory[student]);
   }
   console.log(specializationData);
   prepareStudentsTable(studentRegNo, studentsReport, categories, courseCategory, course, studentInfo);
