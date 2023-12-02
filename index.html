@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <title>Student Graduation Requirements</title>
+</head>
+<body>
+  <label for="studentId">Enter Student Registration No: </label>
+  <input id="studentId" type="text" placeholder="Enter Registration No" />
+  <button id="getStudentsDataButton">Get Exit Requirements</button>
+
+  <div id="tableContainer" style="margin-top: 2rem;"></div>
+
+  <dialog id="m">
+    <div id="suggestedCourses"></div>
+  </dialog>
+
+</body>
+<script src="process-data-script.js"></script>
+</html>
