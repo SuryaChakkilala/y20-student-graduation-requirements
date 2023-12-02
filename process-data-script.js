@@ -11,6 +11,13 @@ function closeSuggestedCourses() {
   m.close();
 }
 
+function printReport(student, studentsData, categories, courseCategory, coursesData, specializationData) {
+  prepareStudentsTable(student, studentsData, categories, courseCategory, coursesData, specializationData);
+  return function () {
+    print();
+  };
+}
+
 function displaySuggestedCourses(category, courseCategory, coursesData) {
   return function () {
     const tableContainer = document.getElementById("suggestedCourses");
@@ -373,5 +380,6 @@ document.getElementById("studentform").addEventListener("submit", async function
     studentsReport[student]["honorsEligible"] = additionalCredits >= 20 && !studentFailHistory[student];
   }
   console.log(specializationData);
+  document.getElementById("printReport").addEventListener("click", printReport(studentRegNo, studentsReport, categories, courseCategory, course, studentInfo));
   prepareStudentsTable(studentRegNo, studentsReport, categories, courseCategory, course, studentInfo);
 });
