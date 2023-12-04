@@ -335,10 +335,10 @@ document.getElementById("studentform").addEventListener("submit", async function
     const studentData = {};
     for (const c of categories) {
       studentData[c] = {
-        "coursesDone": count[c],
-        "coursesRequired": Math.max(a[c] - count[c], 0),
-        "creditsAcquired": totalCreds[c],
-        "creditsRequired": Math.max(b[c] - totalCreds[c], 0),
+        "coursesDone": count[c] ? count[c] : 0,
+        "coursesRequired": Math.max(a[c] - count[c] ? count[c] : 0, 0),
+        "creditsAcquired": totalCreds[c] ? totalCreds[c] : 0,
+        "creditsRequired": Math.max(b[c] - totalCreds[c] ? totalCreds[c] : 0, 0),
       };
     }
 
