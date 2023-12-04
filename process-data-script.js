@@ -336,9 +336,9 @@ document.getElementById("studentform").addEventListener("submit", async function
     for (const c of categories) {
       studentData[c] = {
         "coursesDone": count[c] ? count[c] : 0,
-        "coursesRequired": Math.max(a[c] - count[c] ? count[c] : 0, 0),
+        "coursesRequired": Math.max(a[c] - (count[c] ? count[c] : 0), 0),
         "creditsAcquired": totalCreds[c] ? totalCreds[c] : 0,
-        "creditsRequired": Math.max(b[c] - totalCreds[c] ? totalCreds[c] : 0, 0),
+        "creditsRequired": Math.max(b[c] - (totalCreds[c] ? totalCreds[c] : 0), 0),
       };
     }
 
