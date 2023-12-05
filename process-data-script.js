@@ -1,5 +1,11 @@
-function isPass(grade) {
-  return ["O", "A+", "A", "B+", "B", "C", "P"].includes(grade);
+function isPass(student, course, grade) {
+  const passGrades = new Set(["O", "A+", "A", "B+", "B", "C", "P"]);
+  for (const g of grade) {
+    if (passGrades.has(g)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function hasFailHistory(gradeHistory) {
@@ -274,8 +280,18 @@ document.getElementById("studentform").addEventListener("submit", async function
       students[regNo] = [];
       studentRegisteredCourses[regNo] = new Set();
     }
-    const finalResult = grade.split(",")[0];
-    if (isPass(finalResult)) {
+    
+    let r = [];
+    if (grade.length <= 2) {
+      r.push(grade);
+    } else {
+      const idx = grade.indexOf("(");
+      const idx2 = grade.indexOf(")");
+      const substr = grade.substring(idx + 1, idx2);
+      r = substr.split(",");
+    }
+
+    if (isPass(regNo, code, r)) {
       const result = [code, credits];
       students[regNo].push(result);
     }
