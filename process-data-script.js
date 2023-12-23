@@ -25,8 +25,45 @@ function printReport(student, studentsData, categories, courseCategory, coursesD
   };
 }
 
-function displaySuggestedCourses(category, courseCategory, coursesData) {
-  return function () {
+function readCsv(fileName) {
+  return new Promise((resolve, reject) => {
+    fetch(fileName)
+      .then(response => response.blob())
+      .then(blob => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const data = [];
+          const rows = reader.result.split('\n');
+          const headers = rows[0].split(',');
+
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i].split(',');
+            if (row.length === headers.length) {
+              const entry = {};
+              headers.forEach((header, index) => {
+                entry[header.trim()] = row[index].trim();
+              });
+              data.push(entry);
+            }
+          }
+
+          resolve(data);
+        };
+
+        reader.onerror = () => {
+          reject(new Error('Error reading the file'));
+        };
+
+        reader.readAsText(blob);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+}
+
+function displaySuggestedCourses(student, category, courseCategory, coursesData, studentResultStatus) {
+  return async function () {
     const tableContainer = document.getElementById("suggestedCourses");
     const closeButton = document.createElement("button");
     closeButton.onclick = closeSuggestedCourses;
@@ -42,6 +79,10 @@ function displaySuggestedCourses(category, courseCategory, coursesData) {
     const title = document.createElement("h3");
     title.textContent = category;
     tableContainer.appendChild(title);
+
+    const title2 = document.createElement("h3");
+    title2.textContent = "All Courses";
+    tableContainer.appendChild(title2);
     const table = document.createElement("table");
     table.border = 1;
     const header = ["Course Code", "Course Name"];
@@ -63,11 +104,44 @@ function displaySuggestedCourses(category, courseCategory, coursesData) {
       table.appendChild(tr);
     }
     tableContainer.appendChild(table);
+
+    const studentResults = studentResultStatus[student];
+    
+    const secondTitle = document.createElement("h3");
+    secondTitle.textContent = "Registered Courses";
+    tableContainer.appendChild(secondTitle);
+
+    const registrationTable = document.createElement("table");
+    registrationTable.border = 1;
+    const row1 = document.createElement("tr");
+    const header1 = document.createElement("th");
+    const header2 = document.createElement("th");
+    header1.textContent = "Course Code";
+    header2.textContent = "Result Status";
+    row1.append(header1);
+    row1.append(header2);
+    registrationTable.append(row1);
+
+    for (const course of courses) {
+      if (course in studentResults) {
+        const row = document.createElement("tr");
+        row.style.textAlign = "center";
+        const ele = document.createElement("td");
+        ele.textContent = course;
+        const ele2 = document.createElement("td");
+        ele2.textContent = studentResults[course];
+        row.append(ele);
+        row.append(ele2);
+        registrationTable.append(row);
+      }
+    }
+
+    tableContainer.append(registrationTable);
     m.showModal();
   } 
 }
 
-function prepareStudentsTable(student, studentsData, categories, courseCategory, coursesData, specializationData) {
+function prepareStudentsTable(student, studentsData, categories, courseCategory, coursesData, specializationData, studentResultStatus) {
   const tableContainer = document.getElementById("tableContainer");
   tableContainer.innerHTML = "";
   
@@ -137,8 +211,8 @@ function prepareStudentsTable(student, studentsData, categories, courseCategory,
       } else {
         const anchor = document.createElement("a");
         anchor.href="#";
-        anchor.innerHTML = "Yet to Complete";
-        anchor.onclick = displaySuggestedCourses(category, courseCategory, coursesData);
+        anchor.innerHTML = "Incomplete - Click for more information";
+        anchor.onclick = displaySuggestedCourses(student, category, courseCategory, coursesData, studentResultStatus);
         td.appendChild(anchor);
       }
       
@@ -227,16 +301,33 @@ document.getElementById("studentform").addEventListener("submit", async function
   }
 
   const requirementsPath = "requirements3.csv";
-  const studentsPath = "students4.csv";
+  const studentsPath = "students5.csv";
   const creditsPath = "credits3.csv";
   const specializationPath = "specialization.csv";
+  const resultPendingPath = "reg.csv";
 
-  const [requirementsData, studentsData, creditsData, specializationData] = await Promise.all([
+  const [requirementsData, studentsData, creditsData, specializationData, resultPendingData] = await Promise.all([
     getDataFromCsv(requirementsPath),
     getDataFromCsv(studentsPath),
     getDataFromCsv(creditsPath),
     getDataFromCsv(specializationPath),
+    getDataFromCsv(resultPendingPath)
   ]);
+
+  const studentResultStatus = {};
+  for (const row of studentsData) {
+    if (!(row["reg_no"] in studentResultStatus)) {
+      studentResultStatus[row["reg_no"]] = {};
+    }
+    studentResultStatus[row["reg_no"]][row["code"]] = "Declared";
+  }
+
+  for (const row of resultPendingData) {
+    if (!(row["reg_no"] in studentResultStatus)) {
+      studentResultStatus[row["reg_no"]] = {};
+    }
+    studentResultStatus[row["reg_no"]][row["code"]] = "Yet to be Declared";
+  }
 
   const courseCategory = {};
   const course = {};
@@ -396,7 +487,6 @@ document.getElementById("studentform").addEventListener("submit", async function
     studentsReport[student]["additionalCredits"] = additionalCredits;
     studentsReport[student]["honorsEligible"] = additionalCredits >= 20 && !studentFailHistory[student];
   }
-  console.log(specializationData);
   document.getElementById("printReport").addEventListener("click", printReport(studentRegNo, studentsReport, categories, courseCategory, course, studentInfo));
-  prepareStudentsTable(studentRegNo, studentsReport, categories, courseCategory, course, studentInfo);
+  prepareStudentsTable(studentRegNo, studentsReport, categories, courseCategory, course, studentInfo, studentResultStatus);
 });
